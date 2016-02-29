@@ -44,27 +44,9 @@
 </head>
 <body>
 
-<div style="margin:100px auto 0px auto;width:800px">
-
-<div style="float:left;width:400px">
-
-<h3>Online Video Search</h3>
-
-<iframe id="display" src="" style="width:400px;height:200px">
-</iframe>
+<div style="margin:60px auto 0px auto;width:800px">
 
 <div>
-<input id="input" onkeypress="displayshows(findshows(this.value))" placeholder="Search Shows or Movies" style="width:400px" />
-</div>
-
-<h3>Results</h3>
-
-<div id="output" style="overflow:hidden">
-</div>
-
-</div>
-
-<div style="float:left;margin-left:40px">
 
 <h3>Sites Loaded</h3>
 
@@ -73,6 +55,34 @@
 
 </div>
 
+<div style="width:600px">
+
+<h3>Online Video Search</h3>
+
+<iframe id="display" src="" style="width:600px;height:300px;margin:0px;padding:0px">
+</iframe>
+
+<div>
+<input id="input" onkeyup="displayshows(findshows(this.value))" placeholder="Search Shows or Movies" style="width:500px" />
+<input id="inputgo" type="button" value="Go" />
+</div>
+
+<h3>Results</h3>
+
+<div id="output" style="overflow:hidden">
+</div>
+
+</div>
+<!--
+<div style="float:left;margin-left:40px">
+
+<h3>Sites Loaded</h3>
+
+<div id="sites">
+</div>
+
+</div>
+-->
 <br style="clear:both" />
 
 </div>
@@ -183,9 +193,10 @@ function loadsites(sites){
         var links=JSON.parse(xhttp.responseText);
         addshowstoindex(links);
         sites[b].loaded=true;
-        var elem=document.createElement("div");
+        var elem=document.createElement("span");
         elem.innerHTML=sites[b];
         elem.className="showitem";
+        elem.style.margin="0px 40px 0px 0px";
         document.getElementById("sites").appendChild(elem);
       }
     };
@@ -211,6 +222,18 @@ function loadsites(sites){
 
       return refs;
     }
+
+document.getElementById("input").onkeyup=function(event){
+  displayshows(findshows(document.getElementById("input").value));
+}
+
+document.getElementById("input").ontouchend=function(event){
+  displayshows(findshows(this.value));
+}
+
+document.getElementById("inputgo").onclick=function(event){
+  displayshows(findshows(document.getElementById("input").value));
+}
 
     </script>
 
