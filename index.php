@@ -54,7 +54,7 @@
 </iframe>
 
 <div>
-<input onkeyup="displayshows(findshows(this.value))" placeholder="Search Shows or Movies" style="width:400px" />
+<input id="input" onkeypress="displayshows(findshows(this.value))" placeholder="Search Shows or Movies" style="width:400px" />
 </div>
 
 <h3>Results</h3>
@@ -109,14 +109,15 @@ function displaysources(sources){
     elem.innerHTML=sources[c].url;
     elem.className="sourcesitem";
     (function(){
-    var b=c;
-    elem.onclick=function() {
-      document.getElementById("display").src=sources[b].url;
-    }
+      var b=c;
+      elem.onclick=function() {
+        document.getElementById("display").src=sources[b].url;
+      }
     })();
     document.getElementById("output").appendChild(elem);
   }
 }
+
 function displayepisodes(episodes){
   document.getElementById("output").innerHTML="";
   for(var c=0;c<episodes.length;c++){
@@ -167,7 +168,7 @@ function displayshows(shows){
     document.getElementById("output").appendChild(elem);
   }
 }
-  
+
 function loadsites(sites){
   document.getElementById("output").innerHTML="";
   for(var c=0;c<sites.length;c++){    
@@ -204,7 +205,7 @@ function loadsites(sites){
         for(k=0;k<index[word].length;k++){
           var ref=index[word][k];
 
-        refs.push(ref);
+          refs.push(ref);
         }
       }
 

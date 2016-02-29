@@ -55,7 +55,7 @@ class GoGoAnime extends Site {
 
       $html = strstr($html,"class=\"postlist\"");
 
-      if($html==FALSE)
+      if($html == FALSE)
         break;
 
       $html = strstr($html,"<a href=\"");
@@ -129,8 +129,6 @@ class Cucirca extends Site {
 
     while(true){
 
-      //$html = strstr($html,"class=\"postlist\"");
-
       if($html==FALSE)
         break;
 
@@ -138,8 +136,6 @@ class Cucirca extends Site {
       $html = substr($html,9);
       $url = substr($html,0,strpos($html,"\""));
       $html = substr($html,strlen($url)+2);
-      /*$html = strstr($html,"title=\"");
-      $html = substr($html,7);*/
       $title = substr($html,0,strpos($html,"</a>"));
       $html = substr($html,strlen($title));
 
@@ -151,19 +147,12 @@ class Cucirca extends Site {
   }
   function GetSources($url){
     $html = file_get_contents($url);
-
     $html = strstr($html, "postid-");
-
     $html = substr($html, 7, strpos($html, " ") - 7);
-
     $html = file_get_contents("http://cucirca.eu/getvideo.php?id=" . $html . "&nr=1");
-
     $html = strstr($html, "<IFRAME");
-
     $html = strstr($html, "SRC=\"");
-
     $html = substr($html, 5);
-
     $url = substr($html, 0, strpos($html,"\""));
 
     $source["url"] = $url;
