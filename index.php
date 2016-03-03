@@ -6,6 +6,14 @@
 
   <style>
 
+  #container {
+    margin:60px auto 0px auto;width:600px
+  }
+
+  #display {
+    width:600px;height:300px;margin:0px;padding:0px
+  }
+
   .block {
     display: block;
     float: left;
@@ -44,7 +52,7 @@
 </head>
 <body>
 
-<div style="margin:60px auto 0px auto;width:800px">
+<div id="container">
 
 <div>
 
@@ -55,16 +63,16 @@
 
 </div>
 
-<div style="width:600px">
+<div>
 
 <h3>Online Video Search</h3>
 
-<iframe id="display" src="" style="width:600px;height:300px;margin:0px;padding:0px">
+<iframe id="display" src="" >
 </iframe>
 
 <div>
-<input id="input" onkeyup="displayshows(findshows(this.value))" placeholder="Search Shows or Movies" style="width:500px" />
-<input id="inputgo" type="button" value="Go" />
+<input id="input" onkeyup="displayshows(findshowsinindex(this.value))" placeholder="Search Shows or Movies" style="width:600px" />
+<!--<input id="inputgo" type="button" value="Go" />-->
 </div>
 
 <h3>Results</h3>
@@ -95,146 +103,120 @@ var index={};
 function addtoindex(show){
   var words=show["name"].toLowerCase().split(" ");
 
-  for(var a=0;a<words.length;a++){
-    if(words[a]=="")
-      continue;
+  words.map(function(word) {
+    if(word=="")
+      return;
 
-    if(typeof index[words[a]]!="object")
-      index[words[a]]=new Array();
+    if(typeof index[word]!="object")
+      index[word]=new Array();
 
-    index[words[a]].push(show)
-  }
+    index[word].push(show)
+  })
 }
 
-function addshowstoindex(shows){
-  for(var a=0;a<shows.length;a++){
-    addtoindex(shows[a]);
-  }
+function findshowsinindex(input){
+  var words=input.toLowerCase().split(" ");
+  var refs=[];
+
+  words.map(function(word) {
+    index[word].map(function(ref) {
+      refs.push(ref);
+    })
+  })
+
+  return refs;
+}
+
+function displayelem(c, html, click) {
+  var elem=document.createElement("div");
+  elem.innerHTML=html;
+  elem.className=c;
+  elem.onclick=click
+  return elem
+}
+
+function setajax(url, callback) {
+  var xhttp = new XMLHttpRequest();
+  xhttp.onreadystatechange = function() {
+    if (xhttp.readyState == 4 && xhttp.status == 200) {
+      var links=JSON.parse(xhttp.responseText);
+      callback(links)
+    }
+  };
+  xhttp.open("GET", url, true);
+  xhttp.send();
 }
 
 function displaysources(sources){
   document.getElementById("output").innerHTML="";
-  for(var c=0;c<sources.length;c++){
-    var elem=document.createElement("div");
-    elem.innerHTML=sources[c].url;
-    elem.className="sourcesitem";
-    (function(){
-      var b=c;
-      elem.onclick=function() {
-        document.getElementById("display").src=sources[b].url;
-      }
-    })();
-    document.getElementById("output").appendChild(elem);
-  }
+  sources.map(function(source) {
+    document.getElementById("output").appendChild(displayelem("sourcesitem", source.url, function() {
+      document.getElementById("display").src=source.url;
+    }));
+  })
 }
 
 function displayepisodes(episodes){
   document.getElementById("output").innerHTML="";
-  for(var c=0;c<episodes.length;c++){
-    var elem=document.createElement("div");
-    elem.innerHTML=episodes[c].name;
-    elem.className="episodeitem";
-    (function(){
-    var b=c;
-    elem.onclick=function() {
-      var xhttp = new XMLHttpRequest();
-      xhttp.onreadystatechange = function() {
-        if (xhttp.readyState == 4 && xhttp.status == 200) {
-          var links=JSON.parse(xhttp.responseText);
-          if(links.length==1)
-            document.getElementById("display").src=links[0].url;
-          else
-            displaysources(links);
-        }
-      };
-      xhttp.open("GET", "actions.php?action=getsources&site="+encodeURIComponent(episodes[b].site)+"&url="+episodes[b].url, true);
-      xhttp.send();
-    }
-    })();
-    document.getElementById("output").appendChild(elem);
-  }
+  episodes.map(function(episode) {
+    document.getElementById("output").appendChild(displayelem("episodeitem", episode.name, function() {
+      setajax("actions.php?action=getsources&site="+encodeURIComponent(episode.site)+"&url="+episode.url, function(links) {
+
+        if(links.length==1)
+          document.getElementById("display").src=links[0].url;
+        else
+          displaysources(links);
+
+      })
+    }));
+  })
 }
 
 function displayshows(shows){
   document.getElementById("output").innerHTML="";
-  for(var c=0;c<shows.length;c++){
-    var elem=document.createElement("div");
-    elem.innerHTML=shows[c].name;
-    elem.className="showitem";
-    (function(){
-    var b=c;
-    elem.onclick=function() {
-      var xhttp = new XMLHttpRequest();
-      xhttp.onreadystatechange = function() {
-        if (xhttp.readyState == 4 && xhttp.status == 200) {
-          var links=JSON.parse(xhttp.responseText);
-          displayepisodes(links);
-        }
-      };
-      xhttp.open("GET", "actions.php?action=getepisodes&site="+encodeURIComponent(shows[b].site)+"&url="+encodeURIComponent(shows[b].url), true);
-      xhttp.send();
-    }
-    })();
-    document.getElementById("output").appendChild(elem);
-  }
+  shows.map(function(show) {
+    document.getElementById("output").appendChild(displayelem("showitem", show.name, function() {
+      setajax("actions.php?action=getepisodes&site="+encodeURIComponent(show.site)+"&url="+encodeURIComponent(show.url), function(links) {
+        displayepisodes(links);
+      })
+    }));
+  })
 }
 
 function loadsites(sites){
   document.getElementById("output").innerHTML="";
-  for(var c=0;c<sites.length;c++){    
-    sites[c].loaded=false;
-    (function(){
-    var b=c;
-    var xhttp = new XMLHttpRequest();
-    xhttp.onreadystatechange = function() {
-      if (xhttp.readyState == 4 && xhttp.status == 200) {
-        if(sites[b].loaded)
+  sites.map(function(site) {
+    site.loaded=false;
+    setajax("actions.php?action=getshows&site="+encodeURIComponent(site)+"&url="+encodeURIComponent(site), function(links) {
+      if(site.loaded)
           return;
-        var links=JSON.parse(xhttp.responseText);
-        addshowstoindex(links);
-        sites[b].loaded=true;
+
+        site.loaded=true;
+
+        links.map((c) => addtoindex(c))
+
         var elem=document.createElement("span");
-        elem.innerHTML=sites[b];
-        elem.className="showitem";
+        elem.innerHTML=site;
+        elem.className="siteitem";
         elem.style.margin="0px 40px 0px 0px";
         document.getElementById("sites").appendChild(elem);
-      }
-    };
-    xhttp.open("GET", "actions.php?action=getshows&site="+encodeURIComponent(sites[c])+"&url="+encodeURIComponent(sites[c]), true);
-    xhttp.send();
-    })();
-  }
+    })
+  })
 }
 
-    function findshows(input){
-      var words=input.split(" ");
-      var refs=[];
-      var retshows=[];
-
-      for(i=0;i<words.length;i++){
-        var word=words[i];
-        for(k=0;k<index[word].length;k++){
-          var ref=index[word][k];
-
-          refs.push(ref);
-        }
-      }
-
-      return refs;
-    }
 
 document.getElementById("input").onkeyup=function(event){
-  displayshows(findshows(document.getElementById("input").value));
+  displayshows(findshowsinindex(document.getElementById("input").value));
 }
 
 document.getElementById("input").ontouchend=function(event){
-  displayshows(findshows(this.value));
+  displayshows(findshowsinindex(this.value));
 }
-
+/*
 document.getElementById("inputgo").onclick=function(event){
-  displayshows(findshows(document.getElementById("input").value));
+  displayshows(findshowsinindex(document.getElementById("input").value));
 }
-
+*/
     </script>
 
 
