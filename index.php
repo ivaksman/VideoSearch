@@ -39,11 +39,11 @@
     background:#4cc;
   }
 
-  .sourcesitem {
+  .sourceitem {
     cursor:pointer;
   }
 
-  .sourcesitem:hover {
+  .sourceitem:hover {
     color:white;
     background:#4cc;
   }
@@ -147,40 +147,37 @@ function setajax(url, callback) {
   xhttp.send();
 }
 
-function displaysources(sources){
+function displayitems(items){
+  if(items.length == 0)
+    return;
+
   document.getElementById("output").innerHTML="";
-  sources.map(function(source) {
-    document.getElementById("output").appendChild(displayelem("sourcesitem", source.url, function() {
-      document.getElementById("display").src=source.url;
-    }));
+
+  items.map(function(item) {
+    if(item.type == "show") {
+      document.getElementById("output").appendChild(displayelem("showitem", item.name, function() {
+        setajax("actions.php?action=getepisodes&site="+encodeURIComponent(item.site)+"&url="+encodeURIComponent(item.url), function(links) {
+          displayitems(links);
+        })
+      }));
+    } else if(item.type == "episode") {
+      document.getElementById("output").appendChild(displayelem("episodeitem", item.name, function() {
+        setajax("actions.php?action=getsources&site="+encodeURIComponent(item.site)+"&url="+item.url, function(links) {
+
+          if(links.length==1)
+            document.getElementById("display").src=links[0].url;
+          else
+            displayitems(links);
+
+        })
+      }));
+    } else if(item.type == "source") {
+      document.getElementById("output").appendChild(displayelem("sourceitem", item.url, function() {
+        document.getElementById("display").src=item.url;
+      }));
+    }
   })
-}
 
-function displayepisodes(episodes){
-  document.getElementById("output").innerHTML="";
-  episodes.map(function(episode) {
-    document.getElementById("output").appendChild(displayelem("episodeitem", episode.name, function() {
-      setajax("actions.php?action=getsources&site="+encodeURIComponent(episode.site)+"&url="+episode.url, function(links) {
-
-        if(links.length==1)
-          document.getElementById("display").src=links[0].url;
-        else
-          displaysources(links);
-
-      })
-    }));
-  })
-}
-
-function displayshows(shows){
-  document.getElementById("output").innerHTML="";
-  shows.map(function(show) {
-    document.getElementById("output").appendChild(displayelem("showitem", show.name, function() {
-      setajax("actions.php?action=getepisodes&site="+encodeURIComponent(show.site)+"&url="+encodeURIComponent(show.url), function(links) {
-        displayepisodes(links);
-      })
-    }));
-  })
 }
 
 function loadsites(sites){
@@ -206,11 +203,11 @@ function loadsites(sites){
 
 
 document.getElementById("input").onkeyup=function(event){
-  displayshows(findshowsinindex(document.getElementById("input").value));
+  displayitems(findshowsinindex(document.getElementById("input").value));
 }
 
 document.getElementById("input").ontouchend=function(event){
-  displayshows(findshowsinindex(this.value));
+  displayitems(findshowsinindex(this.value));
 }
 /*
 document.getElementById("inputgo").onclick=function(event){

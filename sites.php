@@ -9,12 +9,21 @@ abstract class Site {
   function GetShowObject($title,$url){
     $show["name"]=$title;
     $show["url"]=$url;
+    $show["type"]="show";
     $show["site"]=$this->GetSiteName();
     return $show;
   }
   function GetEpisodeObject($title,$url){
     $show["name"]=$title;
     $show["url"]=$url;
+    $show["type"]="episode";
+    $show["site"]=$this->GetSiteName();
+    return $show;
+  }
+  function GetSourceObject($title,$url){
+    $show["name"]=$title;
+    $show["url"]=$url;
+    $show["type"]="source";
     $show["site"]=$this->GetSiteName();
     return $show;
   }
@@ -43,10 +52,10 @@ class GoGoAnime extends Site {
       $title = substr($html,0,strpos($html,"<"));
       $html = substr($html,strlen($title));
 
-      $shows[]=$this->GetShowObject($title,$url);
+      $items[]=$this->GetShowObject($title,$url);
     }
 
-    return $shows;
+    return $items;
   }
   function GetEpisodes($url){
     $html = file_get_contents("http://www.gogoanime.com/category/".$url);
@@ -67,10 +76,10 @@ class GoGoAnime extends Site {
       $title = substr($html,0,strpos($html,"\""));
       $html = substr($html,strlen($title));
 
-      $episodes[]=$this->GetEpisodeObject($title,$url);
+      $items[]=$this->GetEpisodeObject($title,$url);
     }
 
-    return $episodes;
+    return $items;
   }
   function GetSources($url){
     $html = file_get_contents($url);
@@ -89,13 +98,11 @@ class GoGoAnime extends Site {
       $url = substr($html,0,strpos($html,"\""));
       $html = substr($html,strlen($url));
 
-      $source["url"]=$url;
-
-      if(substr($source["url"],0,4)=="http")
-        $sources[]=$source;
+      if(substr($url,0,4)=="http")
+        $items[]=$this->GetSourceObject("", $url);
     }
 
-    return $sources;
+    return $items;
   }
 }
 class Cucirca extends Site {
@@ -119,10 +126,10 @@ class Cucirca extends Site {
       $title = substr($html,0,strpos($html,"<"));
       $html = substr($html,strlen($title));
 
-      $shows[]=$this->GetShowObject($title,$url);
+      $items[]=$this->GetShowObject($title,$url);
     }
 
-    return $shows;
+    return $items;
   }
   function GetEpisodes($url){
     $html = file_get_contents($url);
@@ -140,10 +147,10 @@ class Cucirca extends Site {
       $html = substr($html,strlen($title));
 
       if(substr($title,0,7)=="Episode")
-      $episodes[]=$this->GetEpisodeObject($title,$url);
+        $items[]=$this->GetEpisodeObject($title,$url);
     }
 
-    return $episodes;
+    return $items;
   }
   function GetSources($url){
     $html = file_get_contents($url);
@@ -157,9 +164,9 @@ class Cucirca extends Site {
 
     $source["url"] = $url;
 
-    $sources[] = $source;
+    $items[] = $this->GetSourceObject("", $url);
 
-    return $sources;
+    return $items;
   }
 }
 $sites["GoGoAnime"]=new GoGoAnime();
